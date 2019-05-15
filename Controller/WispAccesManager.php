@@ -8,10 +8,10 @@
 
     Class WispAccesManager
     {
-        protected static $singleton;
+        private static $singleton;
         
         // Constructor
-        protected function __construct ()
+        private function __construct ()
         {
             
         }
@@ -67,6 +67,9 @@
                     // echo session_id();
 
                     // print_r($_SESSION);
+                    
+                    // Register user as connected
+                    WispUserManager::Get()->RegisterUserLogin($ParamUsername);
 
                     // Respond
                     $array_meta = array

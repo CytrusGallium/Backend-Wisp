@@ -12,6 +12,7 @@
     require_once ($directory. '/Controller/WispEntityInstance.php');
     require_once ($directory. '/Controller/WispEntityProperty.php');
     require_once ($directory. '/Controller/WispDefaultValue.php');
+    require_once ($directory. '/Controller/WispUserManager.php');
 
     require_once ($directory. '/Libraries/WispJsonMessages.php');
     require_once ($directory. '/Libraries/WispStringTools.php');
