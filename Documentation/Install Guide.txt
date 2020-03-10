@@ -1,0 +1,7 @@
+- Install PHP 7.4
+- Install MySQL
+- Config Model/Connection.ini
+- Create Database 
+- Create Test Database
+- Enable socket extension in php.ini
+- Run WispGenericIntegralTest.php in a browser

@@ -641,8 +641,9 @@ class WispEntityPropertyMultiSubInstance extends WispEntityProperty
     protected $subEntity;
     protected $subInstanceVisiblePropertiesArray;
     protected $operationParametersArray;
+    protected $instanceSummaryString;
 
-    function __construct($ParamPropertyName, $ParamPropertyLabel, $ParamSubInstanceName, $ParamSubInstanceVisiblePropertiesArray, $ParamOperationParametersArray)
+    function __construct($ParamPropertyName, $ParamPropertyLabel, $ParamSubInstanceName, $ParamInstanceSummaryString, $ParamSubInstanceVisiblePropertiesArray, $ParamOperationParametersArray)
     {
         $subEntity = WispEntityManager::Get()->GetEntityByName($ParamSubInstanceName);
         
@@ -659,11 +660,12 @@ class WispEntityPropertyMultiSubInstance extends WispEntityProperty
         $this->operationParametersArray = $ParamOperationParametersArray;
         $this->searchableWithString = false; // TODO : make it searchable with a string
         $this->isUnifield = false;
+        $this->instanceSummaryString = $ParamInstanceSummaryString;
     }
 
     function GetSubEntityName()
     {
-        return $this->subEntityName;
+        return $this->subEntity->GetEntityName();
     }
 
     function GetSummaryString()
@@ -757,7 +759,7 @@ class WispEntityPropertyDate extends WispEntityProperty
         $b = WispConnectionManager::Get()->CheckIfColumnExists($this->parentEntity->GetTableName(), $this->GetDbColumnName());
 
         if (!$b) {
-            WispConnectionManager::Get()->CreateColumn($this->parentEntity->GetTableName(), $this->GetDbColumnName(), 'DATE', 'NULL DEFAULT "0000-00-00"');
+            WispConnectionManager::Get()->CreateColumn($this->parentEntity->GetTableName(), $this->GetDbColumnName(), 'DATE', 'NULL DEFAULT UNIX_TIMESTAMP()');
         }
     }
 

@@ -44,7 +44,7 @@ class WispEntity
         $this->nonOwnerCanDelete = true;
     }
 
-    function GetEntityName()
+    function GetEntityName() : string
     {
         return $this->entityName;
     }
@@ -138,36 +138,13 @@ class WispEntity
         // return WispEntityInstance
     }
 
-    function GetJson(string $ParamPrivilege = '')
+    function GetJson(string $ParamPrivilege = '') : string
     {
-        /*
-        $array_info = array
-        (
-            'EntityName' => $this->GetName(),
-            'EntityLabel' => $this->GetDisplayName(),
-            'GlyphPath' => $this->GetGlyphPath(),
-            'PrimaryProperty' => $this->primaryPropertyName,
-            'SecondayProperty' => $this->secondaryPropertyName,
-            'ThirdiaryProperty' => $this->thirdiaryPropertyName,
-            'DisplayShortcut' => (string)$this->displayShortcut
-        );
-
-
-        $array = array($array_info);
-
-        return json_encode($array);
-        */
-
         return json_encode($this->GetJsonArray());
     }
 
     function GetJsonArray(string $ParamPrivilege = '')
     {
-        // $array_meta = array
-        // (
-        //     'Type' => 'Entity'
-        // );
-
         $array_info = array
         (
             'EntityName' => $this->GetName(),

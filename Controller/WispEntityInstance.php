@@ -71,6 +71,7 @@ class WispEntityInstance extends WispEntity
     function AddToDb($ParamNoUser = false)
     {
         $entityId = (int)$this->GetLastEntityID() + 1;
+        
         $versionId = '1';
         $isLast = '1';
         $timeStamp = date('Y-m-d H:i:s', time());
@@ -238,7 +239,7 @@ class WispEntityInstance extends WispEntity
         // Duplicate in the table with a new ID and ENTITY_ID
     }
 
-    function GetJson(string $ParamPrivilege = '')
+    function GetJson(string $ParamPrivilege = '') : string
     {
         return json_encode($this->GetJsonArray());
     }

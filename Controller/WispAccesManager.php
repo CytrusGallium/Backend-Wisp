@@ -6,7 +6,7 @@ require_once(dirname(__FILE__, 2) . "\WispIncludeEverything.php");
 
 Class WispAccessManager
 {
-    private static $singleton;
+    private static WispAccessManager $singleton;
 
     // Constructor
     private function __construct()

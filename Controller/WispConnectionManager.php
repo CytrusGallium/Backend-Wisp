@@ -49,7 +49,7 @@ class WispConnectionManager
     {
         $q = 'SELECT * FROM information_schema.tables WHERE table_schema = "' . $this->GetDatabaseName() .
             '" AND table_name ="' . $ParamTableName . '";';
-
+        
         if ($this->OpenQuery($q)->IsRecordAvailable()) return true;
 
         return false;
@@ -67,7 +67,10 @@ class WispConnectionManager
     function OpenQuery(string $ParamQuery)
     {
         $statement = $this->GetPdoConnection()->prepare($ParamQuery);
-        $statement->execute();
+        $result = $statement->execute();
+
+        if (!$result)
+            WispJsonMessages::ErrorMessage("PDO_ERROR", $statement->errorInfo()[2]);
 
         $tmp = null;
         if ($statement->rowCount() > 0) $tmp = true;
@@ -113,7 +116,7 @@ class WispConnectionManager
                 "\n" . '(' . "\n" . ' ID INT NOT NULL AUTO_INCREMENT,' .
                 "\n" . ' ENTITY_ID INT NOT NULL DEFAULT 0,' . "\n" .
                 ' VERSION_ID INT NOT NULL DEFAULT 0,' . "\n" . ' IS_LAST BOOLEAN NULL DEFAULT FALSE,' .
-                "\n" . ' DTC TIMESTAMP NULL DEFAULT "0000-00-00",' . "\n" .
+                "\n" . ' DTC TIMESTAMP NULL DEFAULT UNIX_TIMESTAMP(),' . "\n" .
                 ' UID INTEGER NOT NULL DEFAULT 0,' . "\n" . ' IS_DELETED BOOLEAN NULL DEFAULT FALSE,' .
                 "\n" . ' PRIMARY KEY (`ID`));';
 
@@ -154,7 +157,13 @@ class WispConnectionManager
 
     function ExecuteQuery(string $ParamQuery)
     {
-        $this->GetPdoConnection()->prepare($ParamQuery)->execute();
+        // $result = $this->GetPdoConnection()->prepare($ParamQuery)->execute();
+
+        $statement = $this->GetPdoConnection()->prepare($ParamQuery);
+        $result = $statement->execute();
+
+        if (!$result)
+            WispJsonMessages::ErrorMessage("PDO_ERROR", $statement->errorInfo()[2]);
     }
 
     // ...

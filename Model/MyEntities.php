@@ -73,7 +73,7 @@ $e->AddProperty($p);
 //$p = new WispEntityPropertyMultiSubInstance('PRODUCT', 'Produits', 'product', 'BARCODE', true, 'AMOUNT', 'PRICE', 'TOTAL');
 //$e->AddProperty($p);
 
-$p = new WispEntityPropertyMultiSubInstance('SALE_ITEM', 'Articles', 'product', array('NAME','AMOUNT'), array('AMOUNT'));
+$p = new WispEntityPropertyMultiSubInstance('SALE_ITEM', 'Articles', 'product', '$NAME$', array('NAME','AMOUNT'), array('AMOUNT'));
 $e->AddProperty($p);
 
 $e->SetImportantProperties('DATE', 'TOTAL', 'DATE');

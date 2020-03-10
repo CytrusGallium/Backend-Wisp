@@ -15,7 +15,7 @@ Class WispEntityManager
     }
 
     // Get Singleton
-    public static function Get()
+    public static function Get() : WispEntityManager
     {
         if (empty(WispEntityManager::$singleton)) {
             WispEntityManager::$singleton = new WispEntityManager ();
@@ -32,7 +32,7 @@ Class WispEntityManager
         array_push($this->entities, $ParamEntity);
 
         $doesTableExists = WispConnectionManager::Get()->CheckIfTableExists($ParamEntity->GetTableName());
-
+            
         if (!$doesTableExists) WispConnectionManager::Get()->CreateTable($ParamEntity->GetTableName(), true);
 
         // Scaffold Properties
@@ -44,7 +44,7 @@ Class WispEntityManager
     }
 
     // ...
-    public function GetEntityCount()
+    public function GetEntityCount() : int
     {
         return sizeof($this->entities);
     }
@@ -52,7 +52,6 @@ Class WispEntityManager
     // Get a list of entities with their glyph paths in json format, usefull to generate a main menu
     public function GetJson(string $ParamPrivilege = '') : string
     {
-
         $array_entities = array();
         for ($i = 0; $i < count($this->entities); $i++) {
             $array_entities[$this->entities[$i]->GetName()] = $this->entities[$i]->GetJsonArray();

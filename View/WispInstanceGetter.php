@@ -1,12 +1,5 @@
 <?php
 
-// require_once (dirname(__FILE__, 2). '/Controller/WispEntityManager.php');
-// require_once (dirname(__FILE__, 2). '/Model/MyEntities.php');
-// require_once (dirname(__FILE__, 2). '/Controller/WispConnectionManager.php');
-// require_once (dirname(__FILE__, 2). '/Controller/WispEntityInstance.php');
-// require_once (dirname(__FILE__, 2). '/Libraries/WispJsonMessages.php');
-// require_once (dirname(__FILE__, 2). '/Controller/WispAccesManager.php');
-
 require_once(dirname(__FILE__, 2) . "\WispIncludeEverything.php");
 
 // =====================================================================
