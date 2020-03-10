@@ -1,144 +1,116 @@
 <?php
 
-	// require_once (dirname(__FILE__, 2). '/Controller/WispEntityManager.php');
-	// require_once (dirname(__FILE__, 2). '/Model/MyEntities.php');
-	// require_once (dirname(__FILE__, 2). '/Controller/WispConnectionManager.php');
-	// require_once (dirname(__FILE__, 2). '/Controller/WispEntityInstance.php');
-	// require_once (dirname(__FILE__, 2). '/Libraries/WispJsonMessages.php');
-	// require_once (dirname(__FILE__, 2). '/Controller/WispAccesManager.php');
-	
-	require_once (dirname(__FILE__, 2) . "\WispIncludeEverything.php");
+// require_once (dirname(__FILE__, 2). '/Controller/WispEntityManager.php');
+// require_once (dirname(__FILE__, 2). '/Model/MyEntities.php');
+// require_once (dirname(__FILE__, 2). '/Controller/WispConnectionManager.php');
+// require_once (dirname(__FILE__, 2). '/Controller/WispEntityInstance.php');
+// require_once (dirname(__FILE__, 2). '/Libraries/WispJsonMessages.php');
+// require_once (dirname(__FILE__, 2). '/Controller/WispAccesManager.php');
 
-	// =====================================================================
-	if( isset($_POST["s"]) )
-	{
-		$Session_ID = $_POST["s"];
-	}
-	else if( isset($_GET["s"]) )
-	{
-		$Session_ID = $_GET["s"];
-	}
-	else
-	{
-		$Session_ID = "";
-	}
+require_once(dirname(__FILE__, 2) . "\WispIncludeEverything.php");
 
-	WispAccesManager::Get()->CheckUserLogin("json", $Session_ID);
-	// =====================================================================
+// =====================================================================
+if (isset($_POST["s"])) {
+    $Session_ID = $_POST["s"];
+} else if (isset($_GET["s"])) {
+    $Session_ID = $_GET["s"];
+} else {
+    $Session_ID = "";
+}
 
-	// Example : http://localhost/Wisp/View/WispInstanceGetter.php?entity=product&property=barcode&value=689512487 for a new entity instance
+WispAccessManager::Get()->CheckUserLogin("json", $Session_ID);
+// =====================================================================
 
-	// TODO : Check GET/POST Data
-	if(!isset($_GET['entity']) || !isset($_GET['value']) )
-	{
-     	echo "Syntax error or missing variable.";
-     	exit();
-	}
+// Example : http://localhost/Wisp/View/WispInstanceGetter.php?entity=product&property=barcode&value=689512487 for a new entity instance
 
-	// Declaring default variables
-	$searchAll = true;
-	$returnMultipleInstances = false;
+// TODO : Check GET/POST Data
+if (!isset($_GET['entity']) || !isset($_GET['value'])) {
+    echo "Syntax error or missing variable.";
+    exit();
+}
 
-	if ( isset($_GET['property']) )
-	{
-		$searchAll = false;
-		$entityProperty = $_GET['property'];
-	}
+// Declaring default variables
+$searchAll = true;
+$returnMultipleInstances = false;
 
-	if ( isset($_GET['multi']) )
-	{
-		if (is_null($_GET['multi']))
-		{
-			$returnMultipleInstances = false;
-		}
-		elseif ($_GET['multi'] == "1" || $_GET['multi'] == "true")
-		{
-			$returnMultipleInstances = true;
-		}
-		else
-		{
-			$returnMultipleInstances = false;
-		}
-	}
+if (isset($_GET['property'])) {
+    $searchAll = false;
+    $entityProperty = $_GET['property'];
+}
 
-	// PROBABLY DEPRECATED : For privilege checking we need the userID, but the sessionID is more secure and can solve the same problem
-	if ( isset($_GET['uid']) )
-	{
-		$uid = $_GET['uid'];
-	}
-	else
-	{
-		$uid = '';
-	}
+if (isset($_GET['multi'])) {
+    if (is_null($_GET['multi'])) {
+        $returnMultipleInstances = false;
+    } elseif ($_GET['multi'] == "1" || $_GET['multi'] == "true") {
+        $returnMultipleInstances = true;
+    } else {
+        $returnMultipleInstances = false;
+    }
+}
 
-	// Store GET/POST Data
-	// $action = $_GET['action']; // if ID = 0 then create a new instance, if ID > 0 Send an old instance
-	$entityName = $_GET['entity'];
-	$propertyValue = $_GET['value'];
+// PROBABLY DEPRECATED : For privilege checking we need the userID, but the sessionID is more secure and can solve the same problem
+if (isset($_GET['uid'])) {
+    $uid = $_GET['uid'];
+} else {
+    $uid = '';
+}
+
+// Store GET/POST Data
+// $action = $_GET['action']; // if ID = 0 then create a new instance, if ID > 0 Send an old instance
+$entityName = $_GET['entity'];
+$propertyValue = $_GET['value'];
 
 
-	if ($searchAll)
-	{
-		$entityProperty = '';
-	}
-	else
-	{
-		if (is_null($entityProperty))
-		{
-			echo 'Invalid property name ...';
-			exit();
-		}
+if ($searchAll) {
+    $entityProperty = '';
+} else {
+    if (is_null($entityProperty)) {
+        echo 'Invalid property name ...';
+        exit();
+    }
 
-		$entityProperty = $_GET['property'];
-	}	
-	
-	// Check entity existance
-	$tmpEntity = WispEntityManager::Get()->GetEntityByName($entityName);
+    $entityProperty = $_GET['property'];
+}
 
-	if (is_null($tmpEntity))
-	{
-		echo 'Entity Not Found ...';
-		exit();
-	}
+// Check entity existance
+$tmpEntity = WispEntityManager::Get()->GetEntityByName($entityName);
 
-	// Check property and value
-	if (is_null($propertyValue)) 
-	{
-		echo 'Invalid value';
-		exit();
-	}
+if (is_null($tmpEntity)) {
+    echo 'Entity Not Found ...';
+    exit();
+}
 
-	// Get the target property
-	$instances = $tmpEntity->GetInstancesByValue ($entityProperty, $propertyValue, $uid);
+// Check property and value
+if (is_null($propertyValue)) {
+    echo 'Invalid value';
+    exit();
+}
 
-	$count = sizeof($instances);
+// Get the target property
+$instances = $tmpEntity->GetInstancesByValue($entityProperty, $propertyValue, $uid);
 
-	if ($count == 0)
-	{
-		// echo json_encode("No instance found ...");
-		WispJsonMessages::ErrorMessage("NO_INSTANCE", "No instance found.");
-	} 
-	else
-	{
-		if ($returnMultipleInstances)
-		{
-			$instancesInJson = array();
+$count = sizeof($instances);
 
-			for ($i=0; $i < $count; $i++) { 
-				$instancesInJson[$i] = $instances[$i]->GetJsonArray();
-			}
+if ($count == 0) {
+    // echo json_encode("No instance found ...");
+    WispJsonMessages::ErrorMessage("NO_INSTANCE", "No instance found.");
+} else {
+    if ($returnMultipleInstances) {
+        $instancesInJson = array();
 
-			$multiInstanceArray = array
-			(
-				"Type" => "MultiEntityInstance",
-				"Instances" => $instancesInJson
-			);
+        for ($i = 0; $i < $count; $i++) {
+            $instancesInJson[$i] = $instances[$i]->GetJsonArray();
+        }
 
-			echo json_encode($multiInstanceArray);
-		}
-		else
-		{
-			echo $instances[0]->GetJson();	
-		}
-	}
+        $multiInstanceArray = array
+        (
+            "Type" => "MultiEntityInstance",
+            "Instances" => $instancesInJson
+        );
+
+        echo json_encode($multiInstanceArray);
+    } else {
+        echo $instances[0]->GetJson();
+    }
+}
 ?>

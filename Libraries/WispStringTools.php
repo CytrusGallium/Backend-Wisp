@@ -1,86 +1,83 @@
 <?php
 
-	class WispStringTools
-	{
-		static function GenerateRandomString($length) 
-		{
-			$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-			$charactersLength = strlen($characters);
-			$randomString = '';
-			for ($i = 0; $i < $length; $i++) {
-			    $randomString .= $characters[rand(0, $charactersLength - 1)];
-			}
-			return $randomString;
-		}
-	}
+class WispStringTools
+{
+    public static function GenerateRandomString($length)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    public static function IsJson(string $ParamString) {
+        json_decode($ParamString);
+        return (json_last_error() == JSON_ERROR_NONE);
+    }
+}
 
 // ===================================================================================================================================
 
-	class WispDynamicString
-	{
-		protected $rawString;
-		protected $pairArray = array();
-		protected $counter = 0;
+class WispDynamicString
+{
+    protected $rawString;
+    protected $pairArray = array();
+    protected $counter = 0;
 
-		function __Construct (string $ParamRawString)
-		{
-			$this->rawString = $ParamRawString;
-		}
+    function __Construct(string $ParamRawString)
+    {
+        $this->rawString = $ParamRawString;
+    }
 
-		function PrepareArrayFromString()
-		{
-			$currentPiece = '';
-			$onVariable = false;
-			$lastChar = '';
-			
-			for ($i = 0; $i < strlen($this->rawString); $i++)
-			{
-			    $char = $this->rawString[$i];
+    function PrepareArrayFromString()
+    {
+        $currentPiece = '';
+        $onVariable = false;
+        $lastChar = '';
 
-			    if ($char == '$')
-			    {
-			    	if ($lastChar == '$')
-			    	{
-			    		$onVariable = false;
-			    		$this->AddPairToArray('$', false);
-			    		//$currentPiece = '';
-			    		//$lastChar = '';
-			    	}
+        for ($i = 0; $i < strlen($this->rawString); $i++) {
+            $char = $this->rawString[$i];
 
-			    	if ($onVariable)
-			    	{
-			    		$onVariable = false;
-			    		$this->AddPairToArray($currentPiece, true);
-			    		$currentPiece = '';
-			    	}
-			    	else
-			    	{
-			    		$onVariable = true;
-			    		$this->AddPairToArray($currentPiece, false);
-			    		$currentPiece = '';
-			    	}
-			    }
-			    else
-			    {
-			    	$currentPiece = $currentPiece . $char;
-			    }
+            if ($char == '$') {
+                if ($lastChar == '$') {
+                    $onVariable = false;
+                    $this->AddPairToArray('$', false);
+                    //$currentPiece = '';
+                    //$lastChar = '';
+                }
 
-			    $lastChar = $char;
-			}
+                if ($onVariable) {
+                    $onVariable = false;
+                    $this->AddPairToArray($currentPiece, true);
+                    $currentPiece = '';
+                } else {
+                    $onVariable = true;
+                    $this->AddPairToArray($currentPiece, false);
+                    $currentPiece = '';
+                }
+            } else {
+                $currentPiece = $currentPiece . $char;
+            }
 
-			return $this->pairArray;
+            $lastChar = $char;
+        }
 
-		}
+        return $this->pairArray;
 
-		function AddPairToArray(string $ParamString, bool $ParamIsVariable)
-		{
-			if ($ParamString == '')
-				return;
+    }
 
-			$this->pairArray[$this->counter] = array('s' => $ParamString, 'v' => $ParamIsVariable);
+    function AddPairToArray(string $ParamString, bool $ParamIsVariable)
+    {
+        if ($ParamString == '')
+            return;
 
-			$this->counter++;
-		}
-	}
+        $this->pairArray[$this->counter] = array('s' => $ParamString, 'v' => $ParamIsVariable);
+
+        $this->counter++;
+    }
+}
 
 ?>

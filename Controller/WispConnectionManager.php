@@ -1,336 +1,235 @@
 <?php
 
-	class WispConnectionManager
-	{
-		protected static $singleton;
-		protected $pdoConnection;
-		protected $databaseName;
-		
-		protected function __construct ($ParamUseTestDatabase = false)
-		{
-			// Connect to the database
-			try 
-			{	
-				// echo dirname(__FILE__, 2);
+require_once(dirname(__FILE__, 2) . "\WispIncludeEverything.php");
 
-				// $this->pdoConnection = new PDO('mysql:host=wisp.freemyip.com;dbname=test', 'root', 'PASS');
-				// $ini = $_SERVER['DOCUMENT_ROOT']. '/Wisp/Model/Connection.ini';
+class WispConnectionManager
+{
+    protected static $singleton;
+    protected $pdoConnection;
+    protected $databaseName;
 
-				$ini = dirname(__FILE__, 2). '/Model/Connection.ini';
-				$iniArray = parse_ini_file($ini, true);
-				// $ParamUseTestDatabase = true;
-				// echo "VALUE-P = " . $ParamUseTestDatabase;
+    protected function __construct($ParamUseTestDatabase = false)
+    {
+        // Connect to the database
+        try {
+            // echo dirname(__FILE__, 2);
 
-				if ($ParamUseTestDatabase == true)
-				{
-					$sectionName = "test_database";
-					// echo "!";
-				}
-				else
-				{
-					$sectionName = "database";
-				}
+            // $this->pdoConnection = new PDO('mysql:host=wisp.freemyip.com;dbname=test', 'root', 'PASS');
+            // $ini = $_SERVER['DOCUMENT_ROOT']. '/Wisp/Model/Connection.ini';
 
-				$this->pdoConnection = new PDO('mysql:host=' . $iniArray[$sectionName]['host'] . ';dbname='. $iniArray[$sectionName]['db'], $iniArray[$sectionName]['user'], $iniArray[$sectionName]['pass']);
-			}
-			
-			catch (PDOException $e) 
-			{
-			
-				echo 'Error: ' . $e->getMessage();
-				exit();
-				
-			}
-			
-			// Get the database name
-			$statement = $this->pdoConnection->prepare('SELECT database();');
-			$statement->execute();
-			$this->databaseName = $statement->fetchColumn();
-		}
+            $ini = dirname(__FILE__, 2) . '/Model/Connection.ini';
+            $iniArray = parse_ini_file($ini, true);
+            // $ParamUseTestDatabase = true;
+            // echo "VALUE-P = " . $ParamUseTestDatabase;
 
-		// ...
-		public static function Get ($ParamUseTestDatabase = false)
-        {
-        	// $ParamUseTestDatabase = true;
-        	// echo "VALUE = " . $ParamUseTestDatabase;
-            if (empty(WispConnectionManager::$singleton))
-            {
-                WispConnectionManager::$singleton = new WispConnectionManager ($ParamUseTestDatabase);
-                // return WispConnectionManager::$singleton;
+            if ($ParamUseTestDatabase == true) {
+                $sectionName = "test_database";
+                // echo "!";
+            } else {
+                $sectionName = "database";
             }
-            return WispConnectionManager::$singleton;
+
+            $this->pdoConnection = new PDO('mysql:host=' . $iniArray[$sectionName]['host'] . ';dbname=' . $iniArray[$sectionName]['db'], $iniArray[$sectionName]['user'], $iniArray[$sectionName]['pass']);
+        } catch (PDOException $e) {
+
+            echo 'Error: ' . $e->getMessage();
+            exit();
 
         }
-		
-		// ...
-		function GetPdoConnection ()
-		{
-		
-			// if (empty(WispConnectionManager::$Singleton))
-			// {
-				
-			// 	WispConnectionManager::$Singleton = new WispConnectionManager ();
-				
-			// }
-			
-			return WispConnectionManager::Get()->pdoConnection;
-			
-		}
 
-		// ...
-		function GetDatabaseName ()
-		{
-			return $this->databaseName;
-		}
+        // Get the database name
+        $statement = $this->pdoConnection->prepare('SELECT database();');
+        $statement->execute();
+        $this->databaseName = $statement->fetchColumn();
+    }
 
-		// ...
-		function ExecuteQuery (string $ParamQuery)
-		{
-			$this->GetPdoConnection()->prepare($ParamQuery)->execute();
-		}
+    // ...
 
-		// ...
-		function OpenQuery (string $ParamQuery)
-		{
-			$statement = $this->GetPdoConnection()->prepare($ParamQuery);
-			$statement->execute();
+    function CheckIfTableExists(string $ParamTableName)
+    {
+        $q = 'SELECT * FROM information_schema.tables WHERE table_schema = "' . $this->GetDatabaseName() .
+            '" AND table_name ="' . $ParamTableName . '";';
 
-			$tmp;
-			if ($statement->rowCount() > 0) $tmp = true;
-			else $tmp = false;
+        if ($this->OpenQuery($q)->IsRecordAvailable()) return true;
 
-			$result = new WispQueryResult ($statement, $tmp);
-			// $result->PdoStatement = $statement;
-			// $result->isRecordAvailable = $tmp;
+        return false;
+    }
 
-			return $result;
-		}
+    // ...
 
-		// ...
-		function CheckIfTableExists (string $ParamTableName)
-		{
-			$q = 'SELECT * FROM information_schema.tables WHERE table_schema = "' . $this->GetDatabaseName() .
-				'" AND table_name ="' . $ParamTableName . '";';
-			
-			if ($this->OpenQuery($q)->IsRecordAvailable()) return true;
+    function GetDatabaseName()
+    {
+        return $this->databaseName;
+    }
 
-			return false;
-		}
+    // ...
 
-		// ...
-		function CreateTable (string $ParamTableName, bool $ParamEntityTable)
-		{
-			if ($ParamEntityTable)
-			{
-				// If The Table is gonna hold entities it shall have this structure
-				$q = 'CREATE TABLE ' . $ParamTableName .
-				      "\n" . '(' . "\n" . ' ID INT NOT NULL AUTO_INCREMENT,' .
-				      "\n" . ' ENTITY_ID INT NOT NULL DEFAULT 0,' . "\n" .
-				      ' VERSION_ID INT NOT NULL DEFAULT 0,' . "\n" . ' IS_LAST BOOLEAN NULL DEFAULT FALSE,' .
-				      "\n" . ' DTC TIMESTAMP NULL DEFAULT "0000-00-00",' . "\n" .
-				      ' UID INTEGER NOT NULL DEFAULT 0,' . "\n" . ' IS_DELETED BOOLEAN NULL DEFAULT FALSE,' .
-				      "\n" . ' PRIMARY KEY (`ID`));';
+    function OpenQuery(string $ParamQuery)
+    {
+        $statement = $this->GetPdoConnection()->prepare($ParamQuery);
+        $statement->execute();
 
-				WispConnectionManager::Get()->ExecuteQuery($q);
-			}
-			else
-			{
-				// If its another table type it shall have this structure
-			    $q = 'CREATE TABLE ' . $ParamTableName .
-			      "\n" . '(' . "\n" . ' ID INT NOT NULL AUTO_INCREMENT,' .
-			      ' PRIMARY KEY (`ID`));';
+        $tmp = null;
+        if ($statement->rowCount() > 0) $tmp = true;
+        else $tmp = false;
 
-				WispConnectionManager::Get()->ExecuteQuery($q);
-			}
-		}
+        return new WispQueryResult ($statement, $tmp);
+    }
 
-		// ...
-		function CheckIfColumnExists (string $ParamTableName, string $ParamColumnName)
-		{
-			$q = 'SELECT * FROM information_schema.COLUMNS WHERE table_schema = "' . $this->databaseName .
-			    '" AND table_name ="' . $ParamTableName . '" AND column_name = "' .
-			    $ParamColumnName . '";';
-			
-			if ($this->OpenQuery($q)->IsRecordAvailable()) return true;
+    // ...
 
-			return false;
-		}
+    function GetPdoConnection()
+    {
 
-		// ...
-		function CreateColumn(string $ParamTableName, string $ParamColumnName, string $ParamFieldType, string $ParamOptions)
-		{
-			$q = 'ALTER TABLE ' . $ParamTableName . ' ADD ' .
-    			$ParamColumnName . ' ' . $ParamFieldType . ' ' . $ParamOptions . ';';
-			$this->ExecuteQuery($q);
-		}
+        // if (empty(WispConnectionManager::$Singleton))
+        // {
 
-		// ...
-		function ExecuteInsert(string $ParamTableName, $ParamColumns, $ParamValues)
-		{
-			$ColCount = count($ParamColumns);
-			$ValCount = count($ParamValues);
+        // 	WispConnectionManager::$Singleton = new WispConnectionManager ();
 
-			if ($ColCount == 0 || $ValCount == 0)
-			{
-				echo 'ExecuteInsert Error : Column or Value count is equal to zero';
-				exit();
-			}
+        // }
 
-			if ($ColCount != $ValCount)
-			{
-				echo 'ExecuteInsert Error : Column and Value count are not the same';
-				exit();
-			}
+        return WispConnectionManager::Get()->pdoConnection;
 
-			$tmpColomns = '';
-			$tmpValues = '';
+    }
 
-			for ($i = 0; $i < $ColCount; $i++ )
-			{
-				$tmpColomns = $tmpColomns . $ParamColumns[$i];
-				$tmpValues = $tmpValues . '"' . $ParamValues[$i] . '"';
+    // ...
 
-				if ($i < $ColCount - 1)
-				{
-					$tmpColomns = $tmpColomns . ',';
-					$tmpValues = $tmpValues . ',';
-				}
-			}
+    public static function Get($ParamUseTestDatabase = false)
+    {
+        if (empty(WispConnectionManager::$singleton)) {
+            WispConnectionManager::$singleton = new WispConnectionManager ($ParamUseTestDatabase);
+        }
+        return WispConnectionManager::$singleton;
 
-			$tmpColomns = '(' . $tmpColomns . ')';
-			$tmpValues = '(' . $tmpValues . ')';
+    }
 
-			$q = 'INSERT INTO ' . $ParamTableName . ' ' . $tmpColomns . ' VALUES ' .
-    			$tmpValues . ';';
+    // ...
 
-			// echo "Insert Query : " . $q;
-			// echo "<br/>";
+    function CreateTable(string $ParamTableName, bool $ParamEntityTable)
+    {
+        if ($ParamEntityTable) {
+            // If The Table is gonna hold entities it shall have this structure
+            $q = 'CREATE TABLE ' . $ParamTableName .
+                "\n" . '(' . "\n" . ' ID INT NOT NULL AUTO_INCREMENT,' .
+                "\n" . ' ENTITY_ID INT NOT NULL DEFAULT 0,' . "\n" .
+                ' VERSION_ID INT NOT NULL DEFAULT 0,' . "\n" . ' IS_LAST BOOLEAN NULL DEFAULT FALSE,' .
+                "\n" . ' DTC TIMESTAMP NULL DEFAULT "0000-00-00",' . "\n" .
+                ' UID INTEGER NOT NULL DEFAULT 0,' . "\n" . ' IS_DELETED BOOLEAN NULL DEFAULT FALSE,' .
+                "\n" . ' PRIMARY KEY (`ID`));';
 
-			$this->ExecuteQuery($q);
+            WispConnectionManager::Get()->ExecuteQuery($q);
+        } else {
+            // If its another table type it shall have this structure
+            $q = 'CREATE TABLE ' . $ParamTableName .
+                "\n" . '(' . "\n" . ' ID INT NOT NULL AUTO_INCREMENT,' .
+                ' PRIMARY KEY (`ID`));';
 
-			$q = 'SELECT LAST_INSERT_ID();';
+            WispConnectionManager::Get()->ExecuteQuery($q);
+        }
+    }
 
-			return $this->OpenQuery($q)->GetColumnValue('LAST_INSERT_ID()');
-		}
+    // ...
 
-		
-	}
+    function CheckIfColumnExists(string $ParamTableName, string $ParamColumnName)
+    {
+        $q = 'SELECT * FROM information_schema.COLUMNS WHERE table_schema = "' . $this->databaseName .
+            '" AND table_name ="' . $ParamTableName . '" AND column_name = "' .
+            $ParamColumnName . '";';
 
-	
-	// =======================================================================================================================
-	Class WispQueryResult
-	{
-		protected $PdoStatement;
-		Protected $isRecordAvailable;
-		protected $currentRow;
-		protected $records;
-		protected $currentRecordIndex;
+        if ($this->OpenQuery($q)->IsRecordAvailable()) return true;
 
-		// ...
-		function __construct($ParamPdoStatement, $ParamIsRecordAvailable)
-		{
-			$this->records = array();
-			$this->PdoStatement = $ParamPdoStatement;
-			$this->isRecordAvailable = $ParamIsRecordAvailable;
-			$this->OrganizeRecords();
-			$this->Next();
-		}
+        return false;
+    }
 
-		// ...
-		protected function OrganizeRecords()
-		{
-			$i = 0;
-			while ($row = $this->PdoStatement->fetch(PDO::FETCH_ASSOC)) 
-			{	
-        		
-				if (!array_key_exists('TABLE_CATALOG', $row))
-				{
-					$this->records[$i] = $row;
+    // ...
 
-					// print_r($this->records[$i]);
-					// echo '<br/>';
-					// echo '<br/>';
-					
-					$i++;
-				}
-    		
-    		}
+    function CreateColumn(string $ParamTableName, string $ParamColumnName, string $ParamFieldType, string $ParamOptions)
+    {
+        $q = 'ALTER TABLE ' . $ParamTableName . ' ADD ' .
+            $ParamColumnName . ' ' . $ParamFieldType . ' ' . $ParamOptions . ';';
+        $this->ExecuteQuery($q);
+    }
 
-    		$this->currentRecordIndex = 0;
+    // ...
 
-    		// $originalResult = $this->PdoStatement->fetchAll();
-		}	
+    function ExecuteQuery(string $ParamQuery)
+    {
+        $this->GetPdoConnection()->prepare($ParamQuery)->execute();
+    }
 
-		// OLD / DEPRECATED
-		function Next()
-		{
-			$this->currentRow = $this->PdoStatement->fetchAll();
-		}
+    // ...
 
-		// ...
-		function NextRecord ()
-		{
-			if ($this->currentRecordIndex < $this->GetRecordCount()-1)
-			{
-				$this->currentRecordIndex ++;
-				return true;
-				exit();
-			}
+    function ExecuteInsert(string $ParamTableName, $ParamColumns, $ParamValues)
+    {
+        $ColCount = count($ParamColumns);
+        $ValCount = count($ParamValues);
 
-			return false;
-		}
+        if ($ColCount == 0 || $ValCount == 0) {
+            echo 'ExecuteInsert Error : Column or Value count is equal to zero';
+            exit();
+        }
 
-		// ...
-		function IsRecordAvailable()
-		{
-			return $this->isRecordAvailable;
-		}
+        if ($ColCount != $ValCount) {
+            echo 'ExecuteInsert Error : Column and Value count are not the same';
+            exit();
+        }
 
-		// ...
-		function GetRecordCount ()
-		{
-			return $this->PdoStatement->rowCount();
-		}
+        $tmpColomns = '';
+        $tmpValues = '';
 
-		// Get column ID from column Name
-		public function ColumnToId(string $ParamColumnName)
-		{
-			$c = $this->PdoStatement->columnCount();
+        for ($i = 0; $i < $ColCount; $i++) {
+            $tmpColomns = $tmpColomns . $ParamColumns[$i];
+            $tmpValues = $tmpValues . '"' . $ParamValues[$i] . '"';
 
-			if ($c == 0)
-			{
-				echo 'Column count = 0 !';
-				exit();
-			}
+            if ($i < $ColCount - 1) {
+                $tmpColomns = $tmpColomns . ',';
+                $tmpValues = $tmpValues . ',';
+            }
+        }
 
-			for ($i = 0; $i < $c; $i++)
-			{
-				if ($this->PdoStatement->getColumnMeta($i)["name"] == $ParamColumnName)
-				{
-					return $i;
-				}
-			}
-		}
+        $tmpColomns = '(' . $tmpColomns . ')';
+        $tmpValues = '(' . $tmpValues . ')';
 
-		// Old / Deprecated
-		// public function GetColumnValue(string $ParamColumnName)
-		// {
-		// 	$columnID = $this->ColumnToId($ParamColumnName);
-		// 	return $this->currentRow[$columnID];
-		// }
+        $q = 'INSERT INTO ' . $ParamTableName . ' ' . $tmpColomns . ' VALUES ' .
+            $tmpValues . ';';
 
-		// ...
-		public function GetColumnValue(string $ParamColumnName)
-		{
-			// echo "COL = " . $ParamColumnName;
-			return $this->records[$this->currentRecordIndex][$ParamColumnName];
-		}
+        // echo "Insert Query : " . $q;
+        // echo "<br/>";
 
-		// ...
-		public function GetAllRecords()
-		{
-			return $this->records;
-		}
-	}
+        $this->ExecuteQuery($q);
+
+        $q = 'SELECT LAST_INSERT_ID();';
+
+        return $this->OpenQuery($q)->GetColumnValue('LAST_INSERT_ID()');
+    }
+
+    public static function SendToReactor(string $ParamMessage)
+    {
+        $_remote_ip = "127.0.0.1";
+        $_remote_port = 6901;
+
+        $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if ($sock)
+        {
+            set_error_handler(function($errno, $errstr, $errfile, $errline) {
+                echo"";
+            });
+
+            $connect = socket_connect($sock, $_remote_ip, $_remote_port);
+
+            restore_error_handler();
+
+            if ($connect)
+            {
+                socket_read($sock, 2048);
+                socket_write($sock, $ParamMessage, strlen($ParamMessage));
+
+                socket_close($sock);
+            }
+
+        }
+    }
+
+}
 
 ?>

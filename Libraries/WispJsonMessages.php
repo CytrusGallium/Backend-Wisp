@@ -1,32 +1,32 @@
 <?php
 
-	class WispJsonMessages
-	{
-		static function ErrorMessage(string $ParamCode, string $ParamMessage)
-		{
-			$array = array ();
+class WispJsonMessages
+{
+    static function ErrorMessage(string $ParamCode, string $ParamMessage)
+    {
+        $array = array();
 
-			$array ["type"] = "ErrorMessage";
-			$array ["code"] = $ParamCode;
-			$array ["msg"] = $ParamMessage;
+        $array ["type"] = "ErrorMessage";
+        $array ["code"] = $ParamCode;
+        $array ["msg"] = $ParamMessage;
 
-			echo json_encode($array);
+        echo json_encode($array);
 
-			exit();
-		}
+        exit();
+    }
 
-		static function Feedback(string $ParamCode, string $ParamMessage)
-		{
-			$array = array ();
+    static function Feedback(string $ParamCode, string $ParamMessage)
+    {
+        $array = array();
 
-			$array ["type"] = "Feedback";
-			$array ["code"] = $ParamCode;
-			$array ["msg"] = $ParamMessage;
+        $array ["type"] = "Feedback";
+        $array ["code"] = $ParamCode;
+        $array ["msg"] = $ParamMessage;
 
-			echo json_encode($array);
+        echo json_encode($array);
 
-			exit();
-		}
-	}
+        exit();
+    }
+}
 
 ?>
