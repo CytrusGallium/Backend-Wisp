@@ -7,9 +7,9 @@ class WispEntity
 {
     public static $LHP; //Last Handled Property by the entity manager
 
-    protected $entityName;
+    protected string $entityName;
     protected $properties;
-    protected $displayName;
+    protected string $displayName;
     protected $glyphName;
     protected $displayShortcut;
     protected $predefinedList; //WispEntityProperty
@@ -23,6 +23,8 @@ class WispEntity
     protected $nonOwnerCanRead;
     protected $nonOwnerCanUpdate;
     protected $nonOwnerCanDelete;
+    protected $flags;
+    protected string $summaryString = "";
 
     function __construct($ParamName, $ParamDisplayName, $ParamGlyphName = '')
     {
@@ -78,12 +80,11 @@ class WispEntity
         return count($this->properties);
     }
 
-    function AddProperty(WispEntityProperty $ParamProperty)
+    function AddProperty(WispEntityProperty $ParamProperty) : WispEntityProperty
     {
         // Check if the property is empty
         if (empty($ParamProperty)) {
-            echo 'Wisp : Empty parameter, WispEntityProperty instance expected.';
-            return;
+            WispJsonMessages::ErrorMessage("EMPTY_PROPERTY", "Empty property as parameter, WispEntityProperty instance expected.");
         }
 
         // TODO : Check duplicated property by name
@@ -96,10 +97,8 @@ class WispEntity
 
         $ParamProperty->SetParentEntity($this);
 
-        // $ParamProperty->Scaffold(); // This is not the best time to scaffold properties
+        return $ParamProperty;
     }
-
-    // Methods
 
     function GetPropertyByIndex(int $ParamIndex)
     {
@@ -109,6 +108,8 @@ class WispEntity
             }
 
         }
+
+        return null;
     }
 
     function CheckSubEntityPresence()
@@ -116,6 +117,7 @@ class WispEntity
         // return Boolean
     }
 
+    /*
     function CheckShoppingListPresence()
     {
         for ($i = 0; $i < count($this->properties); $i++) {
@@ -127,6 +129,7 @@ class WispEntity
 
         return false;
     }
+    */
 
     function GetGridQueryString()
     {
@@ -153,7 +156,8 @@ class WispEntity
             'PrimaryProperty' => $this->primaryPropertyName,
             'SecondayProperty' => $this->secondaryPropertyName,
             'ThirdiaryProperty' => $this->thirdiaryPropertyName,
-            'DisplayShortcut' => (string)$this->displayShortcut
+            'DisplayShortcut' => (string)$this->displayShortcut,
+            'Flags' => WispStringTools::Implode(",", $this->flags)
         );
 
         return $array = array($array_info);
@@ -396,6 +400,21 @@ class WispEntity
     function SetDisplayShortcut(bool $ParamDisplayShortcut)
     {
         $this->displayShortcut = $ParamDisplayShortcut;
+    }
+
+    function AddFlag(string $ParamFlag)
+    {
+        $this->flags[] = $ParamFlag;
+    }
+
+    function SetSummaryString(string $ParamSummaryString)
+    {
+        $this->summaryString = $ParamSummaryString;
+    }
+
+    function GetSummaryString()
+    {
+        return $this->summaryString;
     }
 
 }

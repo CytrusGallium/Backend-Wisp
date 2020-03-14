@@ -23,6 +23,7 @@ class WispEntityInstance extends WispEntity
         $this->primaryPropertyName = $ParamEntity->GetPrimaryPropertyName();
         $this->secondaryPropertyName = $ParamEntity->GetSecondaryPropertyName();
         $this->thirdiaryPropertyName = $ParamEntity->GetThirdiaryPropertyName();
+        $this->summaryString = $ParamEntity->GetSummaryString();
 
         // Change the parent of the properties + Update property info
         for ($i = 0; $i < count($this->properties); $i++) {
@@ -265,7 +266,8 @@ class WispEntityInstance extends WispEntity
             'isDeleted' => $this->isDeleted,
             '1' => $this->primaryPropertyName,
             '2' => $this->secondaryPropertyName,
-            '3' => $this->thirdiaryPropertyName
+            '3' => $this->thirdiaryPropertyName,
+            'SummaryString' => $this->GenerateSummaryString()
         );
 
         $array_properties = array();
@@ -300,7 +302,8 @@ class WispEntityInstance extends WispEntity
             'isLast' => $this->isLast,
             'timeStamp' => $this->timeStamp,
             'uid' => $this->uid,
-            'isDeleted' => $this->isDeleted
+            'isDeleted' => $this->isDeleted,
+            'SummaryString' => $this->GenerateSummaryString()
         );
 
         $array_properties = array();
@@ -311,6 +314,35 @@ class WispEntityInstance extends WispEntity
         $array = array($array_meta, $array_basic, $array_properties);
 
         return json_encode($array);
+    }
+
+    function GenerateSummaryString()
+    {
+        $bool = ($this->summaryString != "" && isset($this->summaryString));
+
+        if (!$bool)
+            return "";
+        
+        $s = '';
+        $tmpDynamicString = new WispDynamicString($this->summaryString);
+        $tmpArray = $tmpDynamicString->PrepareArrayFromString();
+
+        /*
+        if (!isset($this->value))
+            return "";
+        */
+
+        for ($i = 0; $i < sizeof($tmpArray); $i++) {
+            $tmpSubArray = $tmpArray[$i];
+
+            if ($tmpSubArray['v'] == true) {
+                $s = $s . $this->GetPropertyByName($tmpSubArray['s'])->GetValue();
+            } else {
+                $s = $s . $tmpSubArray['s'];
+            }
+        }
+
+        return $s;
     }
 }
 

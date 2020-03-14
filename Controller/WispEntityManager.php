@@ -19,7 +19,12 @@ Class WispEntityManager
     {
         if (empty(WispEntityManager::$singleton)) {
             WispEntityManager::$singleton = new WispEntityManager ();
-            // return WispEntityManager::$singleton;
+
+            $ini = dirname(__FILE__, 2) . '/Model/App.ini';
+            
+            $iniArray = parse_ini_file($ini, true);
+            $sectionName = "Application";
+            WispEntityManager::$singleton->isScaffoldMode = $iniArray[$sectionName]['scaffolding'];
         }
 
         return WispEntityManager::$singleton;
@@ -31,15 +36,18 @@ Class WispEntityManager
         // Scaffold the Entity
         array_push($this->entities, $ParamEntity);
 
-        $doesTableExists = WispConnectionManager::Get()->CheckIfTableExists($ParamEntity->GetTableName());
-            
-        if (!$doesTableExists) WispConnectionManager::Get()->CreateTable($ParamEntity->GetTableName(), true);
+        if ($this->isScaffoldMode)
+        {
+            $doesTableExists = WispConnectionManager::Get()->CheckIfTableExists($ParamEntity->GetTableName());
+            if (!$doesTableExists) WispConnectionManager::Get()->CreateTable($ParamEntity->GetTableName(), true);
+        }
 
         // Scaffold Properties
         $properties = $ParamEntity->GetCopyOfProperties();
 
         foreach ($properties as $key => $value) {
-            $value->Scaffold();
+            if ($this->isScaffoldMode)
+                $value->Scaffold();
         }
     }
 

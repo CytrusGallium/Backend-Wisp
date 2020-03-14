@@ -12,19 +12,11 @@ class WispConnectionManager
     {
         // Connect to the database
         try {
-            // echo dirname(__FILE__, 2);
-
-            // $this->pdoConnection = new PDO('mysql:host=wisp.freemyip.com;dbname=test', 'root', 'PASS');
-            // $ini = $_SERVER['DOCUMENT_ROOT']. '/Wisp/Model/Connection.ini';
-
             $ini = dirname(__FILE__, 2) . '/Model/Connection.ini';
             $iniArray = parse_ini_file($ini, true);
-            // $ParamUseTestDatabase = true;
-            // echo "VALUE-P = " . $ParamUseTestDatabase;
 
             if ($ParamUseTestDatabase == true) {
                 $sectionName = "test_database";
-                // echo "!";
             } else {
                 $sectionName = "database";
             }
@@ -66,6 +58,8 @@ class WispConnectionManager
 
     function OpenQuery(string $ParamQuery)
     {
+        WispStringTools::LogQuery($ParamQuery, "open");
+        
         $statement = $this->GetPdoConnection()->prepare($ParamQuery);
         $result = $statement->execute();
 
@@ -158,6 +152,8 @@ class WispConnectionManager
     function ExecuteQuery(string $ParamQuery)
     {
         // $result = $this->GetPdoConnection()->prepare($ParamQuery)->execute();
+
+        WispStringTools::LogQuery($ParamQuery, "execute");
 
         $statement = $this->GetPdoConnection()->prepare($ParamQuery);
         $result = $statement->execute();

@@ -18,6 +18,8 @@ $e->AddProperty(new WispEntityPropertyInteger('AMOUNT', 'Quantité Disponible'))
 WispEntity::$LHP->SetEditable(false);
 
 $e->SetImportantProperties('NAME', 'BARCODE', 'AMOUNT');
+$e->AddFlag("CACHE");
+$e->SetSummaryString('$NAME$');
 WispEntityManager::Get()->RegisterEntity($e);
 
 // Family ------------------------------------------------------------------------------------------------------------------------------------
@@ -25,6 +27,8 @@ $e = new WispEntity('family', 'Famille', 'Label');
 $e->AddProperty(new WispEntityPropertyText('NAME', 'Designation', 1));
 
 $e->SetImportantProperties('NAME', 'NAME', 'NAME');
+$e->AddFlag("CACHE");
+$e->SetSummaryString('$NAME$');
 WispEntityManager::Get()->RegisterEntity($e);
 
 // Provider ----------------------------------------------------------------------------------------------------------------------------------
